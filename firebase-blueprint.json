@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "photoURL": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isCreator": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Publication": {
+      "title": "Publication",
+      "description": "User created publication",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "corregimiento": { "type": "string" },
+        "category": { "type": "string" },
+        "subTitle": { "type": "string" },
+        "descriptionTitle": { "type": "string" },
+        "dateRange": { "type": "string" },
+        "image": { "type": "string" },
+        "location": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "corregimiento", "creatorId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "publications/{publicationId}": {
+      "schema": "Publication",
+      "description": "User created publications"
+    }
+  }
+}

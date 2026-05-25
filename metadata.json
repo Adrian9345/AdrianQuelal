@@ -1,0 +1,6 @@
+{
+  "name": "Explora Corregimientos",
+  "description": "App para descubrir la cultura y turismo en los corregimientos de Pasto",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

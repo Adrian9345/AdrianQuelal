@@ -1,0 +1,1 @@
+export type ScreenType = 'welcome' | 'login' | 'register' | 'forgot_password' | 'enter_code' | 'reset_password' | 'home' | 'calendar' | 'corregimientos' | 'corregimiento_detail' | 'map' | 'profile' | 'saved' | 'featured_all' | 'personal_info' | 'privacy_settings' | 'language_settings' | 'help_support' | 'accounts_manager' | 'create_content' | 'manage_publications';
