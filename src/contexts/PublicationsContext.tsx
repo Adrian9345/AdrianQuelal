@@ -71,6 +71,10 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
         setPublications(dbPubs);
       }
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore publications stream error, falling back to local mock data:", error);
+      setPublications(publicationsData);
+      setLoading(false);
     });
 
     return () => unsubscribe();

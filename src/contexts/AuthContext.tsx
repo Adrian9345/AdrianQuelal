@@ -100,7 +100,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
              });
           }
         } catch (err) {
-          handleFirestoreError(err, OperationType.GET, docPath);
+          console.error("Firestore lookup failed, resolving with a fallback profile:", err);
+          setProfile({
+            name: currUser.displayName || currUser.email?.split('@')[0] || 'Usuario',
+            photoURL: currUser.photoURL || null
+          });
         }
       } else {
         setProfile(null);
