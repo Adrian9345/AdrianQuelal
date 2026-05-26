@@ -54,7 +54,7 @@ export default function ManagePublicationsScreen({ onNavigate, onEdit }: { onNav
               >
                 <div className="flex p-4 gap-4">
                   <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-gray-50 relative">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     {item.type && (
                       <div className="absolute top-1 left-1 bg-black/50 backdrop-blur-md px-1.5 py-0.5 rounded-lg">
                         <span className="text-[7px] font-black text-white uppercase tracking-tighter">

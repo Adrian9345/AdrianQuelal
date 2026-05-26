@@ -79,7 +79,7 @@ export default function AccountsManagerScreen({ onNavigate }: { onNavigate: (s: 
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm shrink-0">
                     {account.photoURL ? (
-                      <img src={account.photoURL} alt={account.name} className="w-full h-full object-cover" />
+                      <img src={account.photoURL} alt={account.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
                       <div className="w-full h-full bg-stone-200 flex items-center justify-center">
                         <span className="material-symbols-outlined text-stone-400">person</span>

@@ -149,7 +149,7 @@ export default function Header({ onNavigate, title = 'Usuario', onProfileClick, 
         <div className="flex items-center gap-3 cursor-pointer" onClick={onProfileClick || (() => onNavigate('profile'))}>
           <button aria-label="Perfil de usuario" className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm hover:bg-gray-50 active:scale-95 transition-all focus:outline-none shrink-0">
             {profile?.photoURL ? (
-              <img src={profile.photoURL} alt="Perfil" className="w-full h-full object-cover" />
+              <img src={profile.photoURL} alt="Perfil" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             ) : (
               <span className="material-symbols-outlined text-stone-400 text-2xl">person</span>
             )}

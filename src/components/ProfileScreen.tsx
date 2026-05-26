@@ -206,7 +206,7 @@ export default function ProfileScreen({ onNavigate, onEdit, onLogout }: { onNavi
          <div className="relative">
            <div className="w-28 h-28 bg-white rounded-full border-[5px] border-[#fbf9f4] flex items-center justify-center relative z-10 overflow-hidden shadow-sm">
               {profileImage ? (
-                <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" />
+                <img src={profileImage} alt="Perfil" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
                 <span className="material-symbols-outlined text-stone-400 text-[60px]">person</span>
               )}
@@ -332,7 +332,7 @@ export default function ProfileScreen({ onNavigate, onEdit, onLogout }: { onNavi
                {myPublications.slice(0, 3).map((pub, idx) => (
                  <div key={idx} className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex items-center gap-3">
                    <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
-                     <img src={pub.image} alt={pub.title} className="w-full h-full object-cover" />
+                     <img src={pub.image} alt={pub.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                    </div>
                    <div className="flex-1 min-w-0">
                      <h4 className="font-bold text-xs text-[#30132e] truncate">{pub.title}</h4>
