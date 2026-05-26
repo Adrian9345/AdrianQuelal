@@ -9,6 +9,7 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDomainHelper, setShowDomainHelper] = useState(false);
+  const [showAuthHelper, setShowAuthHelper] = useState(false);
   const [copied, setCopied] = useState(false);
   const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'adrian-quelal.vercel.app';
   const projectId = firebaseConfig?.projectId || 'reliable-granite-k5xj8';
@@ -34,7 +35,8 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
     } catch (err: any) {
       const msg = err?.message || '';
       if (msg.includes('auth/operation-not-allowed')) {
-        setError('El inicio de sesión con Correo/Contraseña no está habilitado en tu proyecto de Firebase. Actívalo en la consola de Firebase o ingresa con tu cuenta de Google.');
+        setError('El inicio de sesión con Correo/Contraseña no está habilitado en tu proyecto de Firebase.');
+        setShowAuthHelper(true);
       } else if (msg.includes('unauthorized-domain') || msg.includes('dominio no autorizado')) {
         setError('Este dominio no cuenta con autorización en tu consola de Firebase.');
         setShowDomainHelper(true);
@@ -128,9 +130,18 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
                 <button
                   type="button"
                   onClick={() => setShowDomainHelper(true)}
-                  className="text-[#f39233] underline text-xs font-extrabold hover:text-[#f39233]/80 block mx-auto py-1"
+                  className="text-[#f39233] underline text-xs font-extrabold hover:text-[#f39233]/80 block mx-auto py-1 animate-pulse"
                 >
                   ⚙️ Ver cómo resolver este error en Firebase
+                </button>
+              )}
+              {(error.includes('no está habilitado') || error.includes('operation-not-allowed') || showAuthHelper) && (
+                <button
+                  type="button"
+                  onClick={() => setShowAuthHelper(true)}
+                  className="text-[#f39233] underline text-xs font-extrabold hover:text-[#f39233]/80 block mx-auto py-1 animate-pulse"
+                >
+                  🔑 Ver cómo activar Correo/Contraseña en tu Firebase
                 </button>
               )}
             </div>
@@ -224,6 +235,53 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
               className="w-full py-3 bg-[#F0EEE9]/10 hover:bg-[#F0EEE9]/20 text-[#F0EEE9] rounded-full text-xs font-bold transition-colors outline-none border border-[#F0EEE9]/20"
             >
               Entendido, cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showAuthHelper && (
+        <div className="fixed inset-0 bg-[#1B1C19]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#2D2E2A] text-[#F0EEE9] border border-[#f39233]/40 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <div className="flex items-center gap-3 text-[#f39233] mb-4">
+              <span className="material-symbols-outlined text-3xl">key_off</span>
+              <h3 className="text-lg font-extrabold font-sans">Proveedor deshabilitado</h3>
+            </div>
+            
+            <p className="text-xs text-[#F0EEE9]/90 mb-4 font-medium leading-relaxed">
+              El inicio de sesión y registro mediante Correo/Contraseña no están habilitados en tu consola de Firebase. Actívalos para permitir que los usuarios ingresen.
+            </p>
+
+            <div className="space-y-3 mb-6 text-xs text-[#F0EEE9]/80 font-medium">
+              <span className="font-extrabold text-[#f39233] text-[11px] uppercase tracking-wider block">Pasos para solucionarlo:</span>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">1</span>
+                <p>Abre la <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-[#f39233] underline hover:text-[#f39233]/80 font-bold">Consola de Firebase</a>.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">2</span>
+                <p>Selecciona tu proyecto: <span className="font-mono text-white bg-black/20 px-1.5 py-0.5 rounded font-bold">{projectId}</span>.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">3</span>
+                <p>Ve a: <strong>Build</strong> &gt; <strong>Authentication</strong> y abre la pestaña <strong>Sign-in method</strong>.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">4</span>
+                <p>Haz clic en <strong>Add new provider</strong> (Añadir nuevo proveedor) y selecciona <strong>Email/Password</strong> (Correo electrónico/contraseña).</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">5</span>
+                <p>Activa el primer interruptor (<strong>Enable</strong>) y haz clic en <strong>Save</strong> (Guardar).</p>
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              onClick={() => setShowAuthHelper(false)}
+              className="w-full py-3 bg-[#f39233] hover:bg-[#f39233]/90 text-[#1B1C19] rounded-full text-xs font-bold transition-all outline-none"
+            >
+              ¡Entendido! Ya lo activé
             </button>
           </div>
         </div>

@@ -9,6 +9,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'adriannoguera93@gmail.com';
+    }
+
     function isValidId(id) {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
@@ -31,32 +35,32 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if isSignedIn() 
         && request.auth.uid == userId 
         && isValidUser(incoming())
         && incoming().createdAt == request.time;
       allow update: if isSignedIn() 
-        && request.auth.uid == userId 
+        && (request.auth.uid == userId || isAdmin())
         && isValidUser(incoming())
         && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'photoURL', 'description', 'isCreator'])
         && incoming().email == existing().email
         && incoming().createdAt == existing().createdAt;
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     function isValidPublication(data) {
       return data.keys().hasAll(['title', 'corregimiento', 'creatorId', 'createdAt'])
         && data.title is string && data.title.size() > 0
         && data.corregimiento is string
-        && data.creatorId == request.auth.uid;
+        && (data.creatorId == request.auth.uid || isAdmin());
     }
 
     match /publications/{pubId} {
       allow read: if true;
       allow create: if isSignedIn() && isValidPublication(incoming()) && incoming().createdAt == request.time;
-      allow update: if isSignedIn() && existing().creatorId == request.auth.uid && isValidPublication(incoming()) && incoming().createdAt == existing().createdAt;
-      allow delete: if isSignedIn() && (existing().creatorId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true); // Creators can delete their stuff
+      allow update: if isSignedIn() && (existing().creatorId == request.auth.uid || isAdmin()) && isValidPublication(incoming()) && incoming().createdAt == existing().createdAt;
+      allow delete: if isSignedIn() && (existing().creatorId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true || isAdmin()); // Creators or Admins can delete
     }
   }
 }

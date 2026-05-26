@@ -81,13 +81,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const docRef = doc(db, 'users', currUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-             setProfile(docSnap.data() as UserProfile);
+             const data = docSnap.data() as UserProfile;
+             if (currUser.email === 'adriannoguera93@gmail.com' && !data.isCreator) {
+               data.isCreator = true;
+               try {
+                 await updateDoc(docRef, { isCreator: true });
+               } catch (e) {
+                 console.error("Failed to self-assign creator role on first signin", e);
+               }
+             }
+             setProfile(data);
           } else {
              const defaultProfile = {
                email: currUser.email || '',
                name: currUser.displayName || currUser.email?.split('@')[0] || 'Usuario',
                photoURL: currUser.photoURL || null,
-               createdAt: serverTimestamp()
+               createdAt: serverTimestamp(),
+               isCreator: currUser.email === 'adriannoguera93@gmail.com' ? true : false
              };
              try {
                await setDoc(docRef, defaultProfile);
@@ -96,14 +106,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
              }
              setProfile({
                name: defaultProfile.name,
-               photoURL: defaultProfile.photoURL
+               photoURL: defaultProfile.photoURL,
+               isCreator: defaultProfile.isCreator
              });
           }
         } catch (err) {
           console.error("Firestore lookup failed, resolving with a fallback profile:", err);
           setProfile({
             name: currUser.displayName || currUser.email?.split('@')[0] || 'Usuario',
-            photoURL: currUser.photoURL || null
+            photoURL: currUser.photoURL || null,
+            isCreator: currUser.email === 'adriannoguera93@gmail.com' ? true : false
           });
         }
       } else {
@@ -148,6 +160,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const ensureUserDocExistsAndModify = async (additionalData: any) => {
     if (!user) return;
     const docPath = `users/${user.uid}`;
+    const mergedData = { ...additionalData };
+    if (user.email === 'adriannoguera93@gmail.com') {
+      mergedData.isCreator = true;
+    }
     try {
       const docRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(docRef);
@@ -155,11 +171,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = {
           email: user.email || '',
           createdAt: serverTimestamp(),
-          ...additionalData
+          isCreator: user.email === 'adriannoguera93@gmail.com' ? true : false,
+          ...mergedData
         };
         await setDoc(docRef, data);
       } else {
-        await updateDoc(docRef, additionalData);
+        await updateDoc(docRef, mergedData);
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, docPath);
