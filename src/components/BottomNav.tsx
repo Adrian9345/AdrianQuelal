@@ -17,7 +17,7 @@ export default function BottomNav({ currentScreen, onNavigate }: { currentScreen
   const showCreatorAdd = profile?.isCreator;
 
   return (
-    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex justify-center w-full max-w-[390px] px-4 pb-4">
+    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex justify-center w-full max-w-full sm:max-w-[412px] px-4 pb-4">
       <nav className="bg-[#30132e] text-white px-2 py-3 shadow-2xl w-full rounded-2xl pointer-events-auto">
         <div className="flex items-center justify-around w-full h-full">
           {isAccountsManager ? (

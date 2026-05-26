@@ -74,9 +74,9 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen w-screen bg-stone-50 flex flex-col items-center justify-center overflow-hidden">
+    <div className="h-[100dvh] w-screen bg-stone-100 flex flex-col items-center justify-center overflow-hidden">
       <div 
-        className="relative bg-white flex flex-col w-full max-w-[390px] h-full overflow-hidden shadow-2xl transition-all"
+        className="fixed sm:relative inset-0 sm:inset-auto bg-white flex flex-col w-full sm:max-w-[412px] h-full sm:h-[880px] sm:max-h-[92vh] overflow-hidden sm:rounded-[36px] sm:shadow-2xl sm:border sm:border-stone-200/50 transition-all"
       >
         <div id="app-scroll-container" className="flex-1 overflow-x-hidden overflow-y-auto relative scrollbar-hide scroll-smooth w-full h-full" style={{ WebkitOverflowScrolling: 'touch' }}>
           {currentScreen === 'welcome' && <WelcomeScreen onNavigateLogin={() => handleNavigate('login')} onNavigateGuest={() => handleNavigate('home')} />}
