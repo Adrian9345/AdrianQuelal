@@ -15,31 +15,41 @@ interface UserAccount {
 
 export default function AccountsManagerScreen({ onNavigate }: { onNavigate: (s: ScreenType) => void }) {
   const { user, profile } = useAuth();
-  // Mock accounts for multi-profile feel as we don't have real multi-auth state storage yet
-  // Usually this would be managed by local storage or a more complex auth wrapper
-  const [accounts, setAccounts] = useState<UserAccount[]>([
-    { 
-      id: user?.uid || '1', 
-      name: profile?.name || user?.email?.split('@')[0] || 'Usuario Actual', 
-      photoURL: profile?.photoURL || null, 
-      email: user?.email || '', 
-      active: true 
-    },
-    { 
-      id: '2', 
-      name: 'Maria Clara', 
-      photoURL: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop', 
-      email: 'mclara@example.com', 
-      active: false 
-    }
-  ]);
+  const [accounts, setAccounts] = useState<UserAccount[]>([]);
 
-  const handleSwitchAccount = (id: string) => {
+  useEffect(() => {
+    const saved = localStorage.getItem('raigal_linked_accounts_v1');
+    if (saved) {
+      try {
+        setAccounts(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse linked accounts", e);
+      }
+    } else if (user) {
+      const initial: UserAccount = { 
+        id: user.uid, 
+        name: profile?.name || user.email?.split('@')[0] || 'Usuario Actual', 
+        photoURL: profile?.photoURL || null, 
+        email: user.email || '', 
+        active: true 
+      };
+      setAccounts([initial]);
+      localStorage.setItem('raigal_linked_accounts_v1', JSON.stringify([initial]));
+    }
+  }, [user, profile]);
+
+  const handleSwitchAccount = async (id: string, email: string) => {
+    if (id === user?.uid) return; // Already on current account
+    
     setAccounts(prev => prev.map(acc => ({ ...acc, active: acc.id === id })));
-    // In a real app, this would trigger a token switch or re-auth
+    localStorage.setItem('raigal_switch_pref_email', email);
+    
+    const { logout } = await import('../firebaseAuth');
+    await logout();
+    
     setTimeout(() => {
-      onNavigate('home');
-    }, 500);
+      onNavigate('login');
+    }, 400);
   };
 
   return (
@@ -69,7 +79,7 @@ export default function AccountsManagerScreen({ onNavigate }: { onNavigate: (s: 
             {accounts.map(account => (
               <div 
                 key={account.id}
-                onClick={() => handleSwitchAccount(account.id)}
+                onClick={() => handleSwitchAccount(account.id, account.email)}
                 className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                   account.active 
                     ? 'border-[#f39233] bg-orange-50/50 shadow-sm' 
@@ -118,7 +128,11 @@ export default function AccountsManagerScreen({ onNavigate }: { onNavigate: (s: 
             Comparte tu dispositivo con amigos o familiares sin mezclar tus descubrimientos.
           </p>
           <button 
-            onClick={() => onNavigate('register')}
+            onClick={async () => {
+              const { logout } = await import('../firebaseAuth');
+              await logout();
+              onNavigate('register');
+            }}
             className="mt-4 px-6 py-2 bg-white text-[#f39233] border border-[#f39233]/30 rounded-full font-bold text-xs hover:bg-[#f39233] hover:text-white transition-all active:scale-95 shadow-sm"
           >
             Empezar ahora

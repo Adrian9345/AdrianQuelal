@@ -83,8 +83,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (docSnap.exists()) {
              setProfile(docSnap.data() as UserProfile);
           } else {
-             const defaultProfile = { name: currUser.displayName || 'Usuario', photoURL: currUser.photoURL || null };
-             setProfile(defaultProfile);
+             const defaultProfile = {
+               email: currUser.email || '',
+               name: currUser.displayName || currUser.email?.split('@')[0] || 'Usuario',
+               photoURL: currUser.photoURL || null,
+               createdAt: serverTimestamp()
+             };
+             try {
+               await setDoc(docRef, defaultProfile);
+             } catch (writeErr) {
+               console.error("Error creating default profile in onAuthStateChanged:", writeErr);
+             }
+             setProfile({
+               name: defaultProfile.name,
+               photoURL: defaultProfile.photoURL
+             });
           }
         } catch (err) {
           handleFirestoreError(err, OperationType.GET, docPath);
@@ -96,6 +109,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user && profile) {
+      try {
+        const saved = localStorage.getItem('raigal_linked_accounts_v1');
+        let accountsList = saved ? JSON.parse(saved) : [];
+        
+        // Mark all accounts as inactive
+        accountsList = accountsList.map((acc: any) => ({ ...acc, active: false }));
+        
+        const existingIdx = accountsList.findIndex((acc: any) => acc.id === user.uid);
+        const currentAccount = {
+          id: user.uid,
+          name: profile.name || user.displayName || user.email?.split('@')[0] || 'Usuario',
+          photoURL: profile.photoURL || user.photoURL || null,
+          email: user.email || '',
+          active: true
+        };
+        
+        if (existingIdx >= 0) {
+          accountsList[existingIdx] = currentAccount;
+        } else {
+          accountsList.push(currentAccount);
+        }
+        
+        localStorage.setItem('raigal_linked_accounts_v1', JSON.stringify(accountsList));
+      } catch (err) {
+        console.error("Error updating local accounts list:", err);
+      }
+    }
+  }, [user, profile]);
 
   const ensureUserDocExistsAndModify = async (additionalData: any) => {
     if (!user) return;

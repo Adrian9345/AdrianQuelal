@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loginWithEmail, googleSignIn } from '../firebaseAuth';
+import firebaseConfig from '../../firebase-applet-config.json';
 
 export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateForgotPassword }: { onLogin: () => void, onNavigateRegister: () => void, onNavigateForgotPassword: () => void }) {
   const [email, setEmail] = useState('');
@@ -7,6 +8,18 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDomainHelper, setShowDomainHelper] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'adrian-quelal.vercel.app';
+  const projectId = firebaseConfig?.projectId || 'reliable-granite-k5xj8';
+
+  useEffect(() => {
+    const prefEmail = localStorage.getItem('raigal_switch_pref_email');
+    if (prefEmail) {
+      setEmail(prefEmail);
+      localStorage.removeItem('raigal_switch_pref_email');
+    }
+  }, []);
 
   const bgImage = "/Recurso 1.png";
   const logoUrl = "/Recurso 9.png";
@@ -19,7 +32,15 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
       await loginWithEmail(email, password);
       onLogin();
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+      const msg = err?.message || '';
+      if (msg.includes('auth/operation-not-allowed')) {
+        setError('El inicio de sesión con Correo/Contraseña no está habilitado en tu proyecto de Firebase. Actívalo en la consola de Firebase o ingresa con tu cuenta de Google.');
+      } else if (msg.includes('unauthorized-domain') || msg.includes('dominio no autorizado')) {
+        setError('Este dominio no cuenta con autorización en tu consola de Firebase.');
+        setShowDomainHelper(true);
+      } else {
+        setError(msg || 'Error al iniciar sesión');
+      }
     } finally {
       setLoading(false);
     }
@@ -32,7 +53,15 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
       await googleSignIn();
       onLogin();
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión con Google');
+      console.error("Google sign in error details:", err);
+      const msg = err?.message || '';
+      const code = err?.code || '';
+      if (msg.includes('unauthorized-domain') || code.includes('unauthorized-domain') || msg.includes('dominio no autorizado')) {
+        setError('Este dominio no está autorizado en tu consola de Firebase.');
+        setShowDomainHelper(true);
+      } else {
+        setError(msg || 'Error al iniciar sesión con Google');
+      }
     } finally {
       setLoading(false);
     }
@@ -92,7 +121,20 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
             <button type="button" onClick={onNavigateForgotPassword} className="text-xs text-[#f39233] hover:underline font-bold">¿Olvidaste tu contraseña?</button>
           </div>
 
-          {error && <div className="text-red-400 text-xs font-bold text-center px-1">{error}</div>}
+          {error && (
+            <div className="text-red-400 text-xs font-bold text-center px-1 space-y-2">
+              <div>{error}</div>
+              {(error.includes('dominio no autorizado') || error.includes('unauthorized-domain') || showDomainHelper) && (
+                <button
+                  type="button"
+                  onClick={() => setShowDomainHelper(true)}
+                  className="text-[#f39233] underline text-xs font-extrabold hover:text-[#f39233]/80 block mx-auto py-1"
+                >
+                  ⚙️ Ver cómo resolver este error en Firebase
+                </button>
+              )}
+            </div>
+          )}
 
           <button 
             type="submit"
@@ -125,6 +167,67 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
           <span className="material-symbols-outlined text-[#F0EEE9] text-2xl">landscape</span>
         </div>
       </div>
+
+      {showDomainHelper && (
+        <div className="fixed inset-0 bg-[#1B1C19]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#2D2E2A] text-[#F0EEE9] border border-[#f39233]/40 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <div className="flex items-center gap-3 text-[#f39233] mb-4">
+              <span className="material-symbols-outlined text-3xl">domain_disabled</span>
+              <h3 className="text-lg font-extrabold font-sans">Dominio no autorizado</h3>
+            </div>
+            
+            <p className="text-xs text-[#F0EEE9]/90 mb-4 font-medium leading-relaxed">
+              Google e inicio de sesión de Firebase necesitan que autorices el dominio actual para que funcione la autenticación.
+            </p>
+
+            <div className="bg-black/30 p-3.5 rounded-2xl mb-4 border border-[#F0EEE9]/10">
+              <span className="text-[10px] uppercase font-bold text-[#f39233] block mb-1">Tu dominio actual:</span>
+              <div className="flex items-center justify-between gap-2">
+                <code className="text-xs font-mono font-bold bg-[#1B1C19] px-2.5 py-1.5 rounded-lg flex-1 overflow-x-auto select-all">{currentHost}</code>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(currentHost);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="px-3.5 py-1.5 bg-[#f39233] text-[#1B1C19] rounded-xl font-bold text-xs hover:scale-105 active:scale-95 transition-all outline-none"
+                >
+                  {copied ? '¡Copiado!' : 'Copiar'}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-3 mb-6 text-xs text-[#F0EEE9]/80 font-medium">
+              <span className="font-extrabold text-[#f39233] text-[11px] uppercase tracking-wider block">Pasos para solucionarlo:</span>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">1</span>
+                <p>Ve a tu <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-[#f39233] underline hover:text-[#f39233]/80 font-bold">Consola de Firebase</a>.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">2</span>
+                <p>Selecciona tu proyecto <span className="font-mono text-white bg-black/20 px-1.5 py-0.5 rounded font-bold">{projectId}</span>.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">3</span>
+                <p>Ve a: <strong>Build</strong> &gt; <strong>Authentication</strong> &gt; pestaña de <strong>Settings</strong>.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">4</span>
+                <p>Entra en <strong>Authorized domains</strong>, haz clic en <strong>Add domain</strong> y pega <span className="text-white font-mono bg-black/20 px-1.5 py-0.5 rounded font-bold">{currentHost}</span>.</p>
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              onClick={() => setShowDomainHelper(false)}
+              className="w-full py-3 bg-[#F0EEE9]/10 hover:bg-[#F0EEE9]/20 text-[#F0EEE9] rounded-full text-xs font-bold transition-colors outline-none border border-[#F0EEE9]/20"
+            >
+              Entendido, cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
