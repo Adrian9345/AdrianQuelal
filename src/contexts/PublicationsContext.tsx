@@ -36,13 +36,10 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const seedPublications = async () => {
       try {
-        const seedRef = doc(db, 'system_metadata', 'status');
-        const seedSnap = await getDoc(seedRef);
-        
         const q = query(collection(db, 'publications'));
         const snapshot = await getDocs(q);
         
-        if (snapshot.empty && (!seedSnap.exists() || !seedSnap.data().seeded)) {
+        if (snapshot.empty) {
           console.log("No publications found in Firestore. Seeding default publications...");
           const keys = Object.keys(publicationsData);
           for (const corregimiento of keys) {
@@ -56,7 +53,6 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
               });
             }
           }
-          await setDoc(seedRef, { seeded: true, seededAt: serverTimestamp() });
           console.log("Default publications successfully seeded on Firestore.");
         }
       } catch (err) {
