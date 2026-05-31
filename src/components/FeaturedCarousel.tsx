@@ -284,7 +284,7 @@ export default function FeaturedCarousel({
                 }`}
               >
                 {/* Beautiful custom curved image container */}
-                <div className="relative aspect-[4/3] w-full rounded-[20px] overflow-hidden mb-4 bg-stone-100 shadow-sm group">
+                <div className="relative aspect-[4/3] w-full rounded-[20px] overflow-hidden mb-4 bg-stone-100 shadow-sm group" style={{ aspectRatio: '4/3' }}>
                   <img
                     src={item.image}
                     alt={item.title}

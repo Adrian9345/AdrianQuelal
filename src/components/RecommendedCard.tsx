@@ -102,17 +102,17 @@ export default function RecommendedCard({
             
             {/* "By Author" style subtitle */}
             <p 
-              className="text-[11px] font-semibold text-[#0a7e93] mt-0.5"
+              className="text-[11px] font-semibold text-[#0a7e93] mt-0.5 truncate"
               style={{ fontFamily: '"Montserrat", sans-serif' }}
             >
               Por {location}
             </p>
 
             {/* Rating Section with golden star */}
-            <div className="flex items-center gap-1 mt-1.5 text-xs text-gray-600 font-extrabold select-none">
-              <span className="material-symbols-outlined text-[14px] text-amber-500 fill-amber-500">star</span>
-              <span className="font-mono text-[11px]">{rating.toFixed(1)}</span>
-              <span className="text-[9.5px] text-gray-400 font-normal ml-1">({category})</span>
+            <div className="flex items-center gap-1 mt-1.5 text-xs text-gray-600 font-extrabold select-none truncate max-w-full">
+              <span className="material-symbols-outlined text-[14px] text-amber-500 fill-amber-500 shrink-0">star</span>
+              <span className="font-mono text-[11px] shrink-0">{rating.toFixed(1)}</span>
+              <span className="text-[9.5px] text-gray-400 font-normal ml-1 truncate">({category})</span>
             </div>
           </div>
 

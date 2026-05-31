@@ -90,7 +90,7 @@ export default function SavedScreen({
             ))}
           </div>
         ) : (
-          <div className="w-full aspect-square bg-gray-50 rounded-[20px] overflow-hidden border border-gray-100 shadow-inner relative flex flex-col items-center justify-center p-8 text-center mt-6">
+          <div className="w-full aspect-square bg-gray-50 rounded-[20px] overflow-hidden border border-gray-100 shadow-inner relative flex flex-col items-center justify-center p-8 text-center mt-6" style={{ aspectRatio: '1/1' }}>
             <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
             
             <span className="material-symbols-outlined text-[64px] mb-4 text-[#f39233] relative z-10" style={{ fontVariationSettings: "'FILL' 0" }}>bookmark_border</span>

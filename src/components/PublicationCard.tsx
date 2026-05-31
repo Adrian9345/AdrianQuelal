@@ -140,7 +140,7 @@ export default function PublicationCard({
       <div className="w-full max-w-sm mx-auto bg-white rounded-[20px] overflow-hidden shadow-2xl border border-gray-150 relative flex flex-col hover:shadow-orange-200/20 hover:scale-[1.01] transition-all duration-300">
         
         {/* Top Image Section */}
-        <div className="relative w-full aspect-[4/4.5] overflow-hidden">
+        <div className="relative w-full aspect-[8/9] overflow-hidden" style={{ aspectRatio: '8/9' }}>
           <img 
             src={finalImage} 
             alt={title} 

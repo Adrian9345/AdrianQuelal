@@ -15,6 +15,7 @@ export default function CorregimientosScreen({ onNavigate, onSelectCorregimiento
                 key={c} 
                 onClick={() => onSelectCorregimiento && onSelectCorregimiento(c)}
                 className="w-full aspect-square bg-[#fbf9f4] rounded-[20px] flex flex-col items-center justify-center border border-gray-100 shadow-sm relative overflow-hidden group cursor-pointer hover:border-orange-200 transition-colors"
+                style={{ aspectRatio: '1/1' }}
               >
                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
                 <div className="w-16 h-16 bg-[#f39233]/10 rounded-full flex items-center justify-center mb-3 text-[#f39233] group-hover:scale-110 transition-transform">
