@@ -82,14 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
              const data = docSnap.data() as UserProfile;
-             if (currUser.email === 'adriannoguera93@gmail.com' && !data.isCreator) {
-               data.isCreator = true;
-               try {
-                 await updateDoc(docRef, { isCreator: true });
-               } catch (e) {
-                 console.error("Failed to self-assign creator role on first signin", e);
-               }
-             }
              setProfile(data);
           } else {
              const defaultProfile = {
@@ -97,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                name: currUser.displayName || currUser.email?.split('@')[0] || 'Usuario',
                photoURL: currUser.photoURL || null,
                createdAt: serverTimestamp(),
-               isCreator: currUser.email === 'adriannoguera93@gmail.com' ? true : false
+               isCreator: false
              };
              try {
                await setDoc(docRef, defaultProfile);
@@ -115,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile({
             name: currUser.displayName || currUser.email?.split('@')[0] || 'Usuario',
             photoURL: currUser.photoURL || null,
-            isCreator: currUser.email === 'adriannoguera93@gmail.com' ? true : false
+            isCreator: false
           });
         }
       } else {
@@ -161,9 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     const docPath = `users/${user.uid}`;
     const mergedData = { ...additionalData };
-    if (user.email === 'adriannoguera93@gmail.com') {
-      mergedData.isCreator = true;
-    }
     try {
       const docRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(docRef);
@@ -171,7 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = {
           email: user.email || '',
           createdAt: serverTimestamp(),
-          isCreator: user.email === 'adriannoguera93@gmail.com' ? true : false,
+          isCreator: false,
           ...mergedData
         };
         await setDoc(docRef, data);

@@ -34,14 +34,23 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const q = query(collection(db, 'publications'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      // Start with empty then fill with Firestore data
-      const dbPubs: Record<string, Publication[]> = {};
+      // Get deleted list from localStorage
+      const deletedList = JSON.parse(localStorage.getItem('app_deleted_publications') || '[]');
+
+      // Start with a clean copy of the default publicationsData
+      const merged: Record<string, Publication[]> = {};
+      Object.keys(publicationsData).forEach((corregimiento) => {
+        // Filter out any mock publications that are in the deleted list
+        merged[corregimiento] = (publicationsData[corregimiento] || []).filter(p => {
+          const titleKey = `${p.corregimiento}::${p.title}`;
+          return !deletedList.includes(p.id) && !deletedList.includes(titleKey);
+        });
+      });
       
       snapshot.forEach((doc) => {
         const data = doc.data();
         const pub: Publication = {
           id: doc.id,
-          // Use defaults or data
           corregimiento: data.corregimiento,
           category: data.category,
           subTitle: data.subTitle,
@@ -57,23 +66,38 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
           year: data.year
         };
         
-        if (!dbPubs[pub.corregimiento]) {
-          dbPubs[pub.corregimiento] = [];
+        // Filter out if this publication was deleted
+        const titleKey = `${pub.corregimiento}::${pub.title}`;
+        if (deletedList.includes(pub.id) || deletedList.includes(titleKey)) {
+          return;
+        }
+
+        if (!merged[pub.corregimiento]) {
+          merged[pub.corregimiento] = [];
         }
         
-        dbPubs[pub.corregimiento].push(pub);
+        // Avoid duplicate by title + corregimiento to keep items clean, prioritizing DB data
+        const index = merged[pub.corregimiento].findIndex(p => p.title === pub.title);
+        if (index >= 0) {
+          merged[pub.corregimiento][index] = pub;
+        } else {
+          merged[pub.corregimiento].push(pub);
+        }
       });
       
-      // We strictly use Firestore data and start empty if Firestore is empty
-      if (snapshot.empty) {
-        setPublications({});
-      } else {
-        setPublications(dbPubs);
-      }
+      setPublications(merged);
       setLoading(false);
     }, (error) => {
-      console.error("Firestore publications stream error, starting empty:", error);
-      setPublications({});
+      console.error("Firestore publications stream error, falling back to local defaults:", error);
+      const deletedList = JSON.parse(localStorage.getItem('app_deleted_publications') || '[]');
+      const filteredDefaults: Record<string, Publication[]> = {};
+      Object.keys(publicationsData).forEach((corregimiento) => {
+        filteredDefaults[corregimiento] = (publicationsData[corregimiento] || []).filter(p => {
+          const titleKey = `${p.corregimiento}::${p.title}`;
+          return !deletedList.includes(p.id) && !deletedList.includes(titleKey);
+        });
+      });
+      setPublications(filteredDefaults);
       setLoading(false);
     });
 
@@ -82,6 +106,17 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
 
   const deletePublication = async (corregimiento: string, title: string, id?: string) => {
     try {
+      // Guard the deleted publication in localStorage so it stays deleted
+      const deletedList = JSON.parse(localStorage.getItem('app_deleted_publications') || '[]');
+      if (id && !deletedList.includes(id)) {
+        deletedList.push(id);
+      }
+      const titleKey = `${corregimiento}::${title}`;
+      if (!deletedList.includes(titleKey)) {
+        deletedList.push(titleKey);
+      }
+      localStorage.setItem('app_deleted_publications', JSON.stringify(deletedList));
+
       if (id && !id.startsWith('mock-')) {
         await deleteDoc(doc(db, 'publications', id));
       } else {
@@ -94,13 +129,16 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
         const snapshot = await getDocs(q);
         const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
         await Promise.all(deletePromises);
-        
-        // Also update local state for mock data
-        setPublications(prev => {
-          const newList = (prev[corregimiento] || []).filter(p => p.title !== title && p.id !== id);
-          return { ...prev, [corregimiento]: newList };
-        });
       }
+      
+      // Explicitly filter local state immediately
+      setPublications(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(key => {
+          updated[key] = (updated[key] || []).filter(p => p.id !== id && p.title !== title);
+        });
+        return updated;
+      });
     } catch (error) {
       console.error("Error deleting publication:", error);
       throw error;

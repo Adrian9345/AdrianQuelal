@@ -373,7 +373,16 @@ export default function ProfileScreen({ onNavigate, onEdit, onLogout }: { onNavi
                        <span className="material-symbols-outlined text-[18px]">edit</span>
                      </button>
                      <button 
-                       onClick={() => {}}
+                       onClick={async () => {
+                          if (window.confirm('¿Estás seguro de que deseas eliminar esta publicación permanentemente?')) {
+                            try {
+                              await deletePublication(pub.corregimiento, pub.title, pub.id);
+                            } catch (err) {
+                              console.error("Error al eliminar la publicación:", err);
+                              alert("No se pudo eliminar la publicación");
+                            }
+                          }
+                        }}
                        className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all"
 
                      >
@@ -423,54 +432,8 @@ export default function ProfileScreen({ onNavigate, onEdit, onLogout }: { onNavi
              </button>
            </div>
 
-           {user?.email === 'adriannoguera93@gmail.com' && (
-            <>
-              <h3 className="font-extrabold text-red-600 tracking-widest text-[11px] mb-3 px-1">ADMINISTRACIÓN DE SISTEMA</h3>
-              <div className="bg-red-50/50 rounded-2xl border border-red-200/60 shadow-sm overflow-hidden mb-8 p-5">
-                <p className="text-xs text-red-800 font-semibold mb-3">
-                  Zona de peligro: Elimina permanentemente todas las publicaciones creadas en la base de datos de Firebase.
-                </p>
-                
-                {clearStatusMessage && (
-                  <div className="mb-4 text-xs font-bold text-center p-2 bg-white rounded-lg border border-red-100 shadow-xs">
-                    {clearStatusMessage}
-                  </div>
-                )}
 
-                {showClearConfirm ? (
-                  <div className="space-y-3">
-                    <p className="text-xs font-bold text-red-700 animate-pulse">
-                      ⚠️ ¿Estás absolutamente seguro de que deseas VACIAR todas las publicaciones en Firebase? Esta acción es irreversible.
-                    </p>
-                    <div className="flex gap-2.5">
-                      <button
-                        disabled={isClearingDb}
-                        onClick={handleClearAllDb}
-                        className="flex-1 py-2 px-3 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 active:scale-95 transition-all text-center disabled:opacity-50"
-                      >
-                        {isClearingDb ? 'Borrando...' : 'Sí, borrar todo'}
-                      </button>
-                      <button
-                        disabled={isClearingDb}
-                        onClick={() => setShowClearConfirm(false)}
-                        className="flex-1 py-1 px-3 bg-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-300 active:scale-95 transition-all text-center disabled:opacity-50"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button 
-                    onClick={() => setShowClearConfirm(true)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 transition-all text-white font-extrabold rounded-xl text-xs select-none shadow-sm"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">delete_forever</span>
-                    Vaciar todas las publicaciones (Firebase)
-                  </button>
-                )}
-              </div>
-            </>
-          )}
+
 
           <h3 className="font-extrabold text-[#30132e] tracking-widest text-[11px] mb-3 px-1">SOPORTE</h3>
            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">

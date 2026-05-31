@@ -57,10 +57,74 @@ export const corregimientoData: Record<string, CorregimientoInfo> = {
 };
 
 export const publicationsData: Record<string, Publication[]> = {
-  'Jogovito': [],
-  'Catambuco': [],
-  'Gualmatán': [],
-  'Obonuco': []
+  'Jogovito': [
+    {
+      id: 'mock-jogovito-1',
+      corregimiento: 'Jogovito',
+      category: 'CULTURAL',
+      subTitle: 'Conexión natural y aire libre',
+      title: 'Festi-Aventura Jogovito',
+      descriptionTitle: 'Disfruta de caminatas ecológicas por los cultivos de hortalizas locales, paseos guiados a caballo y deliciosa gastronomía campesina preparada por los habitantes.',
+      dateRange: '15 - 18 Jun',
+      image: 'https://images.unsplash.com/photo-1545244015-024809cc4b74?q=80&w=800&auto=format&fit=crop',
+      location: 'Senderos ecológicos de Jogovito',
+      type: 'Eventos',
+      day: 15,
+      month: 5,
+      year: 2026
+    }
+  ],
+  'Catambuco': [
+    {
+      id: 'mock-catambuco-1',
+      corregimiento: 'Catambuco',
+      category: 'GASTRONOMÍA SANA',
+      subTitle: 'Sabor tradicional sureño',
+      title: 'Festival del Cuy de Oro',
+      descriptionTitle: 'Explora la sazón gastronómica legendaria de Catambuco. Disfruta del cuy asado tradicional, empanadas de harina y refrescantes bebidas artesanales.',
+      dateRange: '28 - 30 Jun',
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop',
+      location: 'Parque de los Sabores, Catambuco',
+      type: 'Experiencias',
+      day: 28,
+      month: 5,
+      year: 2026
+    }
+  ],
+  'Gualmatán': [
+    {
+      id: 'mock-gualmatan-1',
+      corregimiento: 'Gualmatán',
+      category: 'TRADICIÓN',
+      subTitle: 'Cultura ancestral nariñense',
+      title: 'Ruta del Barniz y Relatos Ancestrales',
+      descriptionTitle: 'Acompaña a colectivos de artesanos locales en un recorrido por los talleres donde se trabaja la resina sagrada de Mopa-Mopa, un arte patrimonio inmaterial.',
+      dateRange: '05 - 10 Jul',
+      image: 'https://images.unsplash.com/photo-1621303837876-43d35133bee0?q=80&w=800&auto=format&fit=crop',
+      location: 'Taller de Arte Ancestral Gualmatán',
+      type: 'Posts Culturales',
+      day: 5,
+      month: 6,
+      year: 2026
+    }
+  ],
+  'Obonuco': [
+    {
+      id: 'mock-obonuco-1',
+      corregimiento: 'Obonuco',
+      category: 'GASTRONOMÍA SANA',
+      subTitle: 'Faldas del volcán Galeras',
+      title: 'Feria de la Fresa y Lácteos',
+      descriptionTitle: 'Visita los cultivos andinos más dulces. Cata productos orgánicos, quesos madurados, helados de paila artesanales y disfruta de música en vivo.',
+      dateRange: '12 - 14 Jul',
+      image: 'https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=800&auto=format&fit=crop',
+      location: 'Plaza Central de Obonuco',
+      type: 'Experiencias',
+      day: 12,
+      month: 6,
+      year: 2026
+    }
+  ]
 };
 
 // Returns suggestions based on the user's typed search query

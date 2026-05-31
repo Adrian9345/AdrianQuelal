@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { loginWithEmail, googleSignIn } from '../firebaseAuth';
+import { loginWithEmail, googleSignIn, facebookSignIn } from '../firebaseAuth';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateForgotPassword }: { onLogin: () => void, onNavigateRegister: () => void, onNavigateForgotPassword: () => void }) {
@@ -68,6 +68,33 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
         setShowPopupHelper(true);
       } else {
         setError(msg || 'Error al iniciar sesión con Google');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await facebookSignIn();
+      onLogin();
+    } catch (err: any) {
+      console.error("Facebook sign in error details:", err);
+      const msg = err?.message || '';
+      const code = err?.code || '';
+      if (msg.includes('unauthorized-domain') || code.includes('unauthorized-domain') || msg.includes('dominio no autorizado')) {
+        setError('Este dominio no está autorizado en tu consola de Firebase.');
+        setShowDomainHelper(true);
+      } else if (msg.includes('popup-closed-by-user') || code.includes('popup-closed-by-user')) {
+        setError('El navegador bloqueó la ventana de Facebook debido a que la aplicación está incrustada en la vista previa.');
+        setShowPopupHelper(true);
+      } else if (msg.includes('auth/operation-not-allowed')) {
+        setError('El proveedor de Facebook no está habilitado en tu consola de Firebase (Authentication -> Sign-in method).');
+        setShowAuthHelper(true);
+      } else {
+        setError(msg || 'Error al iniciar sesión con Facebook');
       }
     } finally {
       setLoading(false);
@@ -178,24 +205,6 @@ export default function LoginScreen({ onLogin, onNavigateRegister, onNavigateFor
             {loading ? 'Iniciando...' : 'Iniciar Sesión'}
           </button>
         </form>
-
-        <div className="relative flex py-8 items-center">
-          <div className="flex-grow border-t border-[#F0EEE9]/40"></div>
-          <span className="flex-shrink mx-4 text-xs text-[#F0EEE9] uppercase tracking-wider font-semibold">o continúa con</span>
-          <div className="flex-grow border-t border-[#F0EEE9]/40"></div>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <button 
-            type="button"
-            onClick={handleGoogleSignIn} 
-            disabled={loading} 
-            className="w-full py-3.5 rounded-full text-xs font-bold bg-white/10 text-[#F0EEE9] border border-[#F0EEE9] hover:bg-white/20 transition-all flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined text-lg">mail</span>
-            Gmail / Google
-          </button>
-        </div>
 
         <p className="text-center text-sm text-[#F0EEE9] pt-8 font-medium">
           ¿No tienes una cuenta? <button className="text-[#f39233] hover:underline font-extrabold" onClick={onNavigateRegister}>Regístrate</button>
