@@ -32,25 +32,12 @@ export default function App() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   useEffect(() => {
-    const isVercel = typeof window !== 'undefined' && (
-      window.location.hostname.includes('vercel') || 
-      window.location.hostname === 'adrian-quelal.vercel.app'
-    );
-
     const unsubscribe = initAuth((user) => {
-      // successful login - go home if on login screens (unless running on Vercel)
-      setCurrentScreen((prev) => {
-        if (isVercel) {
-          return 'welcome';
-        }
-        if (['welcome', 'login', 'register', 'forgot_password', 'enter_code', 'reset_password'].includes(prev)) {
-          return 'home';
-        }
-        return prev;
-      });
+      // Always start the application on the initial login/welcome screen when loaded
+      setCurrentScreen('welcome');
       setIsAuthChecking(false);
     }, () => {
-      // not logged in
+      setCurrentScreen('welcome');
       setIsAuthChecking(false);
     });
 
