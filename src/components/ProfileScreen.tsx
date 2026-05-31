@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 export default function ProfileScreen({ onNavigate, onEdit, onLogout }: { onNavigate: (s: ScreenType) => void, onEdit?: (pub: Publication) => void, onLogout: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { profile, updateProfileImage, updateProfileName, updateProfileDescription, updateProfileRole, user } = useAuth();
-  const { publications: publicationsMap, deletePublication } = usePublications();
+  const { publications: publicationsMap, deletePublication, clearAllPublications } = usePublications();
   const { t } = useLanguage();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -27,6 +27,26 @@ export default function ProfileScreen({ onNavigate, onEdit, onLogout }: { onNavi
   const [resenasCount, setResenasCount] = useState(0);
   
   const [userLocation, setUserLocation] = useState('Ubicación');
+  
+  const [isClearingDb, setIsClearingDb] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearStatusMessage, setClearStatusMessage] = useState<string | null>(null);
+
+  const handleClearAllDb = async () => {
+    setIsClearingDb(true);
+    setClearStatusMessage(null);
+    try {
+      await clearAllPublications();
+      setClearStatusMessage("✅ Base de datos vaciada con éxito.");
+      setTimeout(() => setClearStatusMessage(null), 5000);
+    } catch (e) {
+      setClearStatusMessage("❌ Error al vaciar la base de datos.");
+      setTimeout(() => setClearStatusMessage(null), 5000);
+    } finally {
+      setIsClearingDb(false);
+      setShowClearConfirm(false);
+    }
+  };
 
   // Get user's publications
   const myPublications = (Object.values(publicationsMap).flat() as Publication[]).filter(p => p.creatorId === user?.uid);
@@ -403,7 +423,56 @@ export default function ProfileScreen({ onNavigate, onEdit, onLogout }: { onNavi
              </button>
            </div>
 
-           <h3 className="font-extrabold text-[#30132e] tracking-widest text-[11px] mb-3 px-1">SOPORTE</h3>
+           {user?.email === 'adriannoguera93@gmail.com' && (
+            <>
+              <h3 className="font-extrabold text-red-600 tracking-widest text-[11px] mb-3 px-1">ADMINISTRACIÓN DE SISTEMA</h3>
+              <div className="bg-red-50/50 rounded-2xl border border-red-200/60 shadow-sm overflow-hidden mb-8 p-5">
+                <p className="text-xs text-red-800 font-semibold mb-3">
+                  Zona de peligro: Elimina permanentemente todas las publicaciones creadas en la base de datos de Firebase.
+                </p>
+                
+                {clearStatusMessage && (
+                  <div className="mb-4 text-xs font-bold text-center p-2 bg-white rounded-lg border border-red-100 shadow-xs">
+                    {clearStatusMessage}
+                  </div>
+                )}
+
+                {showClearConfirm ? (
+                  <div className="space-y-3">
+                    <p className="text-xs font-bold text-red-700 animate-pulse">
+                      ⚠️ ¿Estás absolutamente seguro de que deseas VACIAR todas las publicaciones en Firebase? Esta acción es irreversible.
+                    </p>
+                    <div className="flex gap-2.5">
+                      <button
+                        disabled={isClearingDb}
+                        onClick={handleClearAllDb}
+                        className="flex-1 py-2 px-3 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 active:scale-95 transition-all text-center disabled:opacity-50"
+                      >
+                        {isClearingDb ? 'Borrando...' : 'Sí, borrar todo'}
+                      </button>
+                      <button
+                        disabled={isClearingDb}
+                        onClick={() => setShowClearConfirm(false)}
+                        className="flex-1 py-1 px-3 bg-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-300 active:scale-95 transition-all text-center disabled:opacity-50"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setShowClearConfirm(true)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 transition-all text-white font-extrabold rounded-xl text-xs select-none shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">delete_forever</span>
+                    Vaciar todas las publicaciones (Firebase)
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          <h3 className="font-extrabold text-[#30132e] tracking-widest text-[11px] mb-3 px-1">SOPORTE</h3>
            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">
              <button onClick={() => onNavigate('help_support')} className="w-full flex items-center justify-between p-4.5 border-b border-gray-50 hover:bg-gray-50">
                <div className="flex items-center gap-3">

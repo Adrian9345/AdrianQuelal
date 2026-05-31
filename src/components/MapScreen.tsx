@@ -6,6 +6,7 @@ import { ScreenType } from '../types';
 import { corregimientosMapData } from '../data/mapData';
 import { publicationsData, corregimientoData } from '../data/publications';
 import { mapStyles } from '../data/mapStyles';
+import { usePublications } from '../contexts/PublicationsContext';
 
 const API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -100,11 +101,13 @@ export default function MapScreen({ onNavigate, onSelectCorregimiento }: { onNav
     );
   }
 
+  const { publications: publicationsMap } = usePublications();
+
   const selectedCorregimiento = useMemo(() => 
     selectedCorrId ? corregimientosMapData.find(c => c.id === selectedCorrId) : null
   , [selectedCorrId]);
 
-  const publications = selectedCorregimiento ? publicationsData[selectedCorregimiento.name] || [] : [];
+  const publications = selectedCorregimiento ? publicationsMap[selectedCorregimiento.name] || [] : [];
   const info = selectedCorregimiento ? corregimientoData[selectedCorregimiento.name] : null;
 
   return (

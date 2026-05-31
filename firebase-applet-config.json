@@ -1,10 +1,10 @@
 {
-  "projectId": "reliable-granite-k5xj8",
-  "appId": "1:163961995523:web:6a5f764ec116b10e94e936",
-  "apiKey": "AIzaSyDDC_gnDo1cBmPOW_8VbIxpmzmwVVWL8Us",
-  "authDomain": "reliable-granite-k5xj8.firebaseapp.com",
+  "projectId": "raigal-app",
+  "appId": "1:122262471071:web:970c7a35d9055197affdaa",
+  "apiKey": "AIzaSyAOG6FvdYU9ojdJSCkOhqRcDznV7-gl_Dg",
+  "authDomain": "raigal-app.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-9d30128b-17a4-4fb3-b6f1-c905ea2d1d9d",
-  "storageBucket": "reliable-granite-k5xj8.firebasestorage.app",
-  "messagingSenderId": "163961995523",
+  "storageBucket": "raigal-app.firebasestorage.app",
+  "messagingSenderId": "122262471071",
   "measurementId": ""
 }

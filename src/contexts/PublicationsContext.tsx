@@ -20,6 +20,7 @@ interface PublicationsContextType {
   deletePublication: (corregimiento: string, title: string, id?: string) => Promise<void>;
   updatePublication: (corregimiento: string, oldTitle: string, updatedPub: Publication, id?: string) => Promise<void>;
   addPublication: (pub: Publication) => Promise<void>;
+  clearAllPublications: () => Promise<void>;
   loading: boolean;
 }
 
@@ -27,7 +28,7 @@ const PublicationsContext = createContext<PublicationsContextType | undefined>(u
 
 export function PublicationsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [publications, setPublications] = useState<Record<string, Publication[]>>(publicationsData);
+  const [publications, setPublications] = useState<Record<string, Publication[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,17 +64,16 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
         dbPubs[pub.corregimiento].push(pub);
       });
       
-      // If Firestore is empty, we can optionally keep mock data 
-      // but the user wants strictly dynamic behavior
+      // We strictly use Firestore data and start empty if Firestore is empty
       if (snapshot.empty) {
-        setPublications(publicationsData);
+        setPublications({});
       } else {
         setPublications(dbPubs);
       }
       setLoading(false);
     }, (error) => {
-      console.error("Firestore publications stream error, falling back to local mock data:", error);
-      setPublications(publicationsData);
+      console.error("Firestore publications stream error, starting empty:", error);
+      setPublications({});
       setLoading(false);
     });
 
@@ -159,8 +159,21 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const clearAllPublications = async () => {
+    try {
+      const q = query(collection(db, 'publications'));
+      const snapshot = await getDocs(q);
+      const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
+      await Promise.all(deletePromises);
+      setPublications({});
+    } catch (error) {
+      console.error("Error clearing all publications:", error);
+      throw error;
+    }
+  };
+
   return (
-    <PublicationsContext.Provider value={{ publications, deletePublication, updatePublication, addPublication, loading }}>
+    <PublicationsContext.Provider value={{ publications, deletePublication, updatePublication, addPublication, clearAllPublications, loading }}>
       {children}
     </PublicationsContext.Provider>
   );

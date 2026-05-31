@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the upload is a valid image (png or jpeg)
+    function isImage() {
+      return request.resource.contentType.matches('image/png') || 
+             request.resource.contentType.matches('image/jpeg') ||
+             request.resource.contentType.matches('image/jpg');
+    }
+
+    // Matches the user's personal gallery (users/userId/gallery/...)
+    match /users/{userId}/{allPaths=**} {
+      // Authenticated users can view images
+      allow read: if isSignedIn();
+      
+      // Only the owner of the gallery can upload, and it must be a JPG or PNG image
+      allow write: if isSignedIn() && request.auth.uid == userId && isImage();
+    }
+  }
+}

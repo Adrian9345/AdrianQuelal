@@ -57,62 +57,10 @@ export const corregimientoData: Record<string, CorregimientoInfo> = {
 };
 
 export const publicationsData: Record<string, Publication[]> = {
-  'Jogovito': [
-    {
-      id: 'mock-1',
-      corregimiento: 'Jogovito',
-      category: 'NATURALEZA',
-      subTitle: 'VIDA DE CAMPO',
-      title: 'Rutas de Cosecha',
-      descriptionTitle: 'Experiencia agrícola en Jogovito',
-      dateRange: 'Todo el año',
-      image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop',
-      location: 'Jogovito, Pasto',
-      type: 'Experiencias'
-    }
-  ],
-  'Catambuco': [
-    {
-      id: 'mock-2',
-      corregimiento: 'Catambuco',
-      category: 'GASTRONOMÍA',
-      subTitle: 'SABORES TRADICIONALES',
-      title: 'Festival del Cuy',
-      descriptionTitle: 'Encuentro culinario en Catambuco',
-      dateRange: 'Agosto - Septiembre',
-      image: 'https://images.unsplash.com/photo-1542435503-956c469947f6?q=80&w=800&auto=format&fit=crop',
-      location: 'Catambuco, Pasto',
-      type: 'Eventos'
-    }
-  ],
-  'Gualmatán': [
-    {
-      id: 'mock-3',
-      corregimiento: 'Gualmatán',
-      category: 'CULTURA',
-      subTitle: 'ARTE LOCAL',
-      title: 'Feria de Artesanías',
-      descriptionTitle: 'Muestra de talento en Gualmatán',
-      dateRange: 'Junio',
-      image: 'https://images.unsplash.com/photo-1518182170546-076616fd4803?q=80&w=800&auto=format&fit=crop',
-      location: 'Gualmatán, Pasto',
-      type: 'Eventos'
-    }
-  ],
-  'Obonuco': [
-    {
-      id: 'mock-4',
-      corregimiento: 'Obonuco',
-      category: 'AGROTURISMO',
-      subTitle: 'DESPENSA LOCAL',
-      title: 'Ruta de la Leche',
-      descriptionTitle: 'Turismo rural en Obonuco',
-      dateRange: 'Todo el año',
-      image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop',
-      location: 'Obonuco, Pasto',
-      type: 'Experiencias'
-    }
-  ]
+  'Jogovito': [],
+  'Catambuco': [],
+  'Gualmatán': [],
+  'Obonuco': []
 };
 
 // Returns suggestions based on the user's typed search query

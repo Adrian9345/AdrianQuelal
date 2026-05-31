@@ -14,6 +14,8 @@ export default function RegisterScreen({ onRegister, onNavigateLogin }: { onRegi
   const [loading, setLoading] = useState(false);
   const [showDomainHelper, setShowDomainHelper] = useState(false);
   const [showAuthHelper, setShowAuthHelper] = useState(false);
+  const [showPopupHelper, setShowPopupHelper] = useState(false);
+  const [showBlockedHelper, setShowBlockedHelper] = useState(false);
   const [copied, setCopied] = useState(false);
   const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'adrian-quelal.vercel.app';
   const projectId = firebaseConfig?.projectId || 'reliable-granite-k5xj8';
@@ -78,6 +80,9 @@ export default function RegisterScreen({ onRegister, onNavigateLogin }: { onRegi
       if (msg.includes('unauthorized-domain') || code.includes('unauthorized-domain') || msg.includes('dominio no autorizado')) {
         setError('Este dominio no cuenta con autorización en tu consola de Firebase.');
         setShowDomainHelper(true);
+      } else if (msg.includes('popup-closed-by-user') || code.includes('popup-closed-by-user')) {
+        setError('El navegador bloqueó la ventana de Google debido a que la aplicación está incrustada en la vista previa.');
+        setShowPopupHelper(true);
       } else {
         setError(msg || 'Error al registrarse con Google');
       }
@@ -185,6 +190,24 @@ export default function RegisterScreen({ onRegister, onNavigateLogin }: { onRegi
                   🔑 Ver cómo activar Correo/Contraseña en tu Firebase
                 </button>
               )}
+              {(error.includes('bloqueó') || error.includes('popup-closed-by-user') || showPopupHelper) && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowPopupHelper(true)}
+                    className="text-[#f39233] underline text-xs font-extrabold hover:text-[#f39233]/80 block mx-auto py-1 animate-pulse"
+                  >
+                    🌐 Ver cómo poder usar Google Sign-In en esta vista previa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBlockedHelper(true)}
+                    className="text-yellow-400 underline text-xs font-extrabold hover:text-yellow-300 block mx-auto py-1 animate-pulse"
+                  >
+                    ⚠️ Ver cómo solucionar "Acceso bloqueado (Error 403)" de Google
+                  </button>
+                </>
+              )}
             </div>
           )}
 
@@ -206,11 +229,13 @@ export default function RegisterScreen({ onRegister, onNavigateLogin }: { onRegi
         </div>
 
         <button 
+          type="button"
           onClick={handleGoogleSignIn} 
           disabled={loading} 
-          className="w-full py-3.5 rounded-full text-xs font-bold bg-white/10 text-[#F0EEE9] border border-[#F0EEE9] hover:bg-white/20 transition-colors"
+          className="w-full py-3.5 rounded-full text-xs font-bold bg-white/10 text-[#F0EEE9] border border-[#F0EEE9] hover:bg-white/20 transition-all flex items-center justify-center gap-2"
         >
-          Google
+          <span className="material-symbols-outlined text-lg">mail</span>
+          Gmail / Google
         </button>
 
         <p className="text-center text-sm text-[#F0EEE9] pt-6 font-medium">
@@ -327,6 +352,97 @@ export default function RegisterScreen({ onRegister, onNavigateLogin }: { onRegi
               className="w-full py-3 bg-[#f39233] hover:bg-[#f39233]/90 text-[#1B1C19] rounded-full text-xs font-bold transition-all outline-none"
             >
               ¡Entendido! Ya lo activé
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showPopupHelper && (
+        <div className="fixed inset-0 bg-[#1B1C19]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#2D2E2A] text-[#F0EEE9] border border-[#f39233]/40 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <div className="flex items-center gap-3 text-[#f39233] mb-4">
+              <span className="material-symbols-outlined text-3xl">open_in_new</span>
+              <h3 className="text-lg font-extrabold font-sans">Bloqueo de ventana de Google</h3>
+            </div>
+            
+            <p className="text-xs text-[#F0EEE9]/90 mb-4 font-medium leading-relaxed">
+              Estás viendo la aplicación dentro del marco o iframe de vista previa de <strong>AI Studio</strong>. Por motivos de seguridad y políticas de "origen cruzado", el navegador bloquea las ventanas emergentes (popups) de inicio de sesión de Google dentro de marcos incrustados.
+            </p>
+
+            <div className="space-y-4 mb-6 text-xs text-[#F0EEE9]/80 font-medium">
+              <span className="font-extrabold text-[#f39233] text-[11px] uppercase tracking-wider block">Cómo solucionarlo de inmediato:</span>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">1</span>
+                <div>
+                  <p className="font-bold text-white">Opción recomendada (Abrir en pestaña nueva):</p>
+                  <p className="mt-1">Haz clic en el botón de <strong>Abrir en pestaña nueva</strong> en la esquina superior derecha del navegador de vista de AI Studio (o abre directamente la URL de desarrollo compartida).</p>
+                </div>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-[#f39233]/20 text-[#f39233] font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0">2</span>
+                <div>
+                  <p className="font-bold text-white">Opción alternativa (Correo y Contraseña):</p>
+                  <p className="mt-1">Si activaste el proveedor de Correo/Contraseña en tu Firebase, puedes usar el registro tradicional mediante correo electrónico, el cual funciona perfectamente dentro del iframe.</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              onClick={() => setShowPopupHelper(false)}
+              className="w-full py-3 bg-[#f39233] hover:bg-[#f39233]/90 text-[#1B1C19] rounded-full text-xs font-bold transition-all outline-none"
+            >
+              Entendido, continuar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showBlockedHelper && (
+        <div className="fixed inset-0 bg-[#1B1C19]/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto w-full">
+          <div className="bg-[#2D2E2A] text-[#F0EEE9] border border-[#f39233] rounded-3xl max-w-lg w-full p-6 shadow-2xl relative my-8">
+            <div className="flex items-center gap-3 text-yellow-400 mb-4">
+              <span className="material-symbols-outlined text-3xl">g_mobiledata</span>
+              <h3 className="text-base font-extrabold font-sans">Cómo solucionar "Acceso Bloqueado (Error 403)"</h3>
+            </div>
+            
+            <p className="text-xs text-[#F0EEE9]/90 mb-4 font-medium leading-relaxed">
+              El error <strong>"Acceso bloqueado: raigal-app no completó el proceso de verificación de Google"</strong> ocurre porque tu proyecto de Firebase <span className="text-yellow-400 font-bold">raigal-app</span> tiene su pantalla de consentimiento OAuth en modo de <strong>"Prueba" (Testing)</strong> y solicita permisos sensibles.
+            </p>
+
+            <div className="space-y-4 mb-6 text-xs text-[#F0EEE9]/90 font-medium">
+              <div className="bg-black/20 p-3.5 rounded-2xl border border-white/5 space-y-2">
+                <span className="font-extrabold text-yellow-400 text-[10px] uppercase tracking-wider block">Solución Rápida: Agregar Usuarios de Prueba</span>
+                <p className="leading-relaxed">Cualquier persona que intente registrarse o iniciar sesión con Google (como <strong className="text-white">blackmc4523@gmail.com</strong> o tu propio correo) debe estar registrada como usuario de prueba en tu consola.</p>
+                
+                <div className="space-y-1.5 pl-3 border-l-2 border-yellow-400/40 mt-2">
+                  <p>1. Ve a la <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-yellow-400 font-bold underline">Consola de Google Cloud</a> e ingresa con tu cuenta del proyecto.</p>
+                  <p>2. Selecciona tu proyecto <span className="font-mono text-white bg-black/44 px-1 py-0.5 rounded text-[10px] font-bold">raigal-app</span> desde el selector superior.</p>
+                  <p>3. En el menú de la izquierda, busca y haz clic en <strong>"Pantalla de consentimiento de OAuth"</strong> (OAuth consent screen).</p>
+                  <p>4. Desplázate hacia abajo hasta la sección de <strong>"Usuarios de prueba"</strong> (Test users).</p>
+                  <p>5. Haz clic en el botón de <strong className="text-yellow-400">+ ADD USERS</strong> (+ AGREGAR USUARIOS).</p>
+                  <p>6. Escribe los correos electrónicos correspondientes (por ejemplo: <strong className="text-white">blackmc4523@gmail.com</strong>) y haz clic en <strong>Guardar</strong>.</p>
+                </div>
+              </div>
+
+              <div className="bg-black/20 p-3.5 rounded-2xl border border-white/5 space-y-2">
+                <span className="font-extrabold text-yellow-400 text-[10px] uppercase tracking-wider block font-sans">Solución Permanente: Publicar la Aplicación</span>
+                <p className="leading-relaxed">Al publicar la aplicación, cualquier usuario con una cuenta de Google podrá iniciar sesión inmediatamente.</p>
+                
+                <div className="space-y-1.5 pl-3 border-l-2 border-yellow-400/40 mt-2">
+                  <p>1. En la misma sección de <strong>"Pantalla de consentimiento de OAuth"</strong> (consola de Google Cloud).</p>
+                  <p>2. En la parte superior verás el estado <strong>"Pruebas" (Testing)</strong>.</p>
+                  <p>3. Haz clic en el botón que dice <strong>"PUBLICAR APLICACIÓN"</strong> (Publish app) y confirma la acción para pasar a <strong className="text-white">"Producción"</strong>.</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              onClick={() => setShowBlockedHelper(false)}
+              className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-[#1B1C19] rounded-full text-xs font-bold transition-all outline-none"
+            >
+              ¡Entendido, ya sé cómo arreglarlo!
             </button>
           </div>
         </div>
