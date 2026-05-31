@@ -32,6 +32,34 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const seedPublications = async () => {
+      try {
+        const q = query(collection(db, 'publications'));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+          console.log("No publications found in Firestore. Seeding default publications...");
+          const keys = Object.keys(publicationsData);
+          for (const corregimiento of keys) {
+            const list = publicationsData[corregimiento] || [];
+            for (const pub of list) {
+              const { id: _, ...cleanedPub } = pub;
+              await addDoc(collection(db, 'publications'), {
+                ...cleanedPub,
+                createdAt: serverTimestamp(),
+                creatorId: 'static-seed'
+              });
+            }
+          }
+          console.log("Default publications successfully seeded on Firestore.");
+        }
+      } catch (err) {
+        console.error("Error seeding default publications:", err);
+      }
+    };
+    seedPublications();
+  }, []);
+
+  useEffect(() => {
     const q = query(collection(db, 'publications'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       // Get deleted list from localStorage
