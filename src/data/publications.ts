@@ -123,6 +123,21 @@ export const publicationsData: Record<string, Publication[]> = {
       day: 12,
       month: 6,
       year: 2026
+    },
+    {
+      id: 'mock-obonuco-guaguas',
+      corregimiento: 'Obonuco',
+      category: 'TRADICIÓN',
+      subTitle: 'Fieles y Ofrendas Ancestrales',
+      title: 'Fiesta mis Guaguas de Pan',
+      descriptionTitle: 'Celebración andina tradicional con impresionantes representaciones artísticas, música de viento andino y deliciosas guaguas de pan artesanales.',
+      dateRange: '02 - 05 Nov',
+      image: 'https://images.unsplash.com/photo-1545244015-024809cc4b74?q=80&w=800&auto=format&fit=crop',
+      location: 'Plaza Principal de Obonuco',
+      type: 'Eventos',
+      day: 2,
+      month: 11,
+      year: 2026
     }
   ]
 };
@@ -163,8 +178,26 @@ export function getSearchSuggestions(query: string) {
     }
   }
 
+  // Filter on Vercel to limit recommendations solely to Guaguas de Pan
+  const isVercel = typeof window !== 'undefined' && (
+    window.location.hostname.includes('vercel') || 
+    window.location.hostname === 'adrian-quelal.vercel.app'
+  );
+  
+  let finalPublications = matchedPublications;
+  let finalCorregimientos = matchedCorregimientos;
+
+  if (isVercel) {
+    finalPublications = matchedPublications.filter(pub => {
+      const t = pub.title.toLowerCase();
+      return t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
+    });
+    // On Vercel, the only corregimiento with this publication is Obonuco
+    finalCorregimientos = matchedCorregimientos.filter(c => c.name === 'Obonuco');
+  }
+
   return {
-    corregimientos: matchedCorregimientos,
-    publications: matchedPublications
+    corregimientos: finalCorregimientos,
+    publications: finalPublications
   };
 }

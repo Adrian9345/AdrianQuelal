@@ -113,7 +113,27 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
         }
       });
       
-      setPublications(merged);
+      // Filter here for Vercel if environment is Vercel
+      const isVercel = typeof window !== 'undefined' && (
+        window.location.hostname.includes('vercel') || 
+        window.location.hostname === 'adrian-quelal.vercel.app'
+      );
+      
+      if (isVercel) {
+        const filteredMerged: Record<string, Publication[]> = {};
+        Object.keys(merged).forEach((corregimiento) => {
+          const filteredList = merged[corregimiento].filter(pub => {
+            const t = pub.title.toLowerCase();
+            return t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
+          });
+          if (filteredList.length > 0) {
+            filteredMerged[corregimiento] = filteredList;
+          }
+        });
+        setPublications(filteredMerged);
+      } else {
+        setPublications(merged);
+      }
       setLoading(false);
     }, (error) => {
       console.error("Firestore publications stream error, falling back to local defaults:", error);
@@ -125,7 +145,27 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
           return !deletedList.includes(p.id) && !deletedList.includes(titleKey);
         });
       });
-      setPublications(filteredDefaults);
+      
+      const isVercel = typeof window !== 'undefined' && (
+        window.location.hostname.includes('vercel') || 
+        window.location.hostname === 'adrian-quelal.vercel.app'
+      );
+      
+      if (isVercel) {
+        const filteredMerged: Record<string, Publication[]> = {};
+        Object.keys(filteredDefaults).forEach((corregimiento) => {
+          const filteredList = filteredDefaults[corregimiento].filter(pub => {
+            const t = pub.title.toLowerCase();
+            return t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
+          });
+          if (filteredList.length > 0) {
+            filteredMerged[corregimiento] = filteredList;
+          }
+        });
+        setPublications(filteredMerged);
+      } else {
+        setPublications(filteredDefaults);
+      }
       setLoading(false);
     });
 
@@ -145,19 +185,21 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
       }
       localStorage.setItem('app_deleted_publications', JSON.stringify(deletedList));
 
+      // 1. Delete by direct Firestore Document ID if valid
       if (id && !id.startsWith('mock-')) {
         await deleteDoc(doc(db, 'publications', id));
-      } else {
-        // Fallback for mock or if only title/corregimiento provided
-        const q = query(
-          collection(db, 'publications'), 
-          where('title', '==', title), 
-          where('corregimiento', '==', corregimiento)
-        );
-        const snapshot = await getDocs(q);
-        const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
-        await Promise.all(deletePromises);
       }
+      
+      // 2. Always also query and delete from Firestore by matching title + corregimiento 
+      //    to keep the database completely synchronized in all cases (including mock seeding cases)
+      const q = query(
+        collection(db, 'publications'), 
+        where('title', '==', title), 
+        where('corregimiento', '==', corregimiento)
+      );
+      const snapshot = await getDocs(q);
+      const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
+      await Promise.all(deletePromises);
       
       // Explicitly filter local state immediately
       setPublications(prev => {
