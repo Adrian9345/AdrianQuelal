@@ -11,7 +11,9 @@ import {
   query, 
   where,
   serverTimestamp,
-  getDocs
+  getDocs,
+  getDoc,
+  setDoc
 } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 
@@ -34,9 +36,13 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const seedPublications = async () => {
       try {
+        const seedRef = doc(db, 'system_metadata', 'status');
+        const seedSnap = await getDoc(seedRef);
+        
         const q = query(collection(db, 'publications'));
         const snapshot = await getDocs(q);
-        if (snapshot.empty) {
+        
+        if (snapshot.empty && (!seedSnap.exists() || !seedSnap.data().seeded)) {
           console.log("No publications found in Firestore. Seeding default publications...");
           const keys = Object.keys(publicationsData);
           for (const corregimiento of keys) {
@@ -50,6 +56,7 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
               });
             }
           }
+          await setDoc(seedRef, { seeded: true, seededAt: serverTimestamp() });
           console.log("Default publications successfully seeded on Firestore.");
         }
       } catch (err) {
@@ -64,54 +71,51 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       // Get deleted list from localStorage
       const deletedList = JSON.parse(localStorage.getItem('app_deleted_publications') || '[]');
-
-      // Start with a clean copy of the default publicationsData
       const merged: Record<string, Publication[]> = {};
-      Object.keys(publicationsData).forEach((corregimiento) => {
-        // Filter out any mock publications that are in the deleted list
-        merged[corregimiento] = (publicationsData[corregimiento] || []).filter(p => {
-          const titleKey = `${p.corregimiento}::${p.title}`;
-          return !deletedList.includes(p.id) && !deletedList.includes(titleKey);
-        });
-      });
-      
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const pub: Publication = {
-          id: doc.id,
-          corregimiento: data.corregimiento,
-          category: data.category,
-          subTitle: data.subTitle,
-          title: data.title,
-          descriptionTitle: data.descriptionTitle,
-          dateRange: data.dateRange,
-          image: data.image,
-          location: data.location,
-          creatorId: data.creatorId,
-          type: data.type || 'Eventos',
-          day: data.day,
-          month: data.month,
-          year: data.year
-        };
-        
-        // Filter out if this publication was deleted
-        const titleKey = `${pub.corregimiento}::${pub.title}`;
-        if (deletedList.includes(pub.id) || deletedList.includes(titleKey)) {
-          return;
-        }
 
-        if (!merged[pub.corregimiento]) {
-          merged[pub.corregimiento] = [];
-        }
-        
-        // Avoid duplicate by title + corregimiento to keep items clean, prioritizing DB data
-        const index = merged[pub.corregimiento].findIndex(p => p.title === pub.title);
-        if (index >= 0) {
-          merged[pub.corregimiento][index] = pub;
-        } else {
+      if (snapshot.empty) {
+        // Fallback to static defaults only if Firestore contains absolutely nothing
+        Object.keys(publicationsData).forEach((corregimiento) => {
+          merged[corregimiento] = (publicationsData[corregimiento] || []).filter(p => {
+            const titleKey = `${p.corregimiento}::${p.title}`;
+            return !deletedList.includes(p.id) && !deletedList.includes(titleKey);
+          });
+        });
+      } else {
+        // If Firestore has documents, use them exclusively! This ensures that deletes in any environment
+        // are instantly synchronized across all other clients and deployments.
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const pub: Publication = {
+            id: doc.id,
+            corregimiento: data.corregimiento,
+            category: data.category,
+            subTitle: data.subTitle,
+            title: data.title,
+            descriptionTitle: data.descriptionTitle,
+            dateRange: data.dateRange,
+            image: data.image,
+            location: data.location,
+            creatorId: data.creatorId,
+            type: data.type || 'Eventos',
+            day: data.day,
+            month: data.month,
+            year: data.year
+          };
+          
+          // Filter out locally if deleted on this client
+          const titleKey = `${pub.corregimiento}::${pub.title}`;
+          if (deletedList.includes(pub.id) || deletedList.includes(titleKey)) {
+            return;
+          }
+
+          if (!merged[pub.corregimiento]) {
+            merged[pub.corregimiento] = [];
+          }
+          
           merged[pub.corregimiento].push(pub);
-        }
-      });
+        });
+      }
       
       // Filter here for Vercel if environment is Vercel
       const isVercel = typeof window !== 'undefined' && (
