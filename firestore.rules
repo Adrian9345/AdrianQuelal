@@ -59,7 +59,7 @@ service cloud.firestore {
     match /publications/{pubId} {
       allow read: if true;
       allow create: if (isSignedIn() || incoming().creatorId == 'static-seed') && isValidPublication(incoming()) && incoming().createdAt == request.time;
-      allow update: if isSignedIn() && (existing().creatorId == request.auth.uid || isAdmin()) && isValidPublication(incoming()) && incoming().createdAt == existing().createdAt;
+      allow update: if isSignedIn() && (existing().creatorId == request.auth.uid || existing().creatorId == 'static-seed' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true || isAdmin()) && isValidPublication(incoming()) && incoming().createdAt == existing().createdAt;
       allow delete: if isSignedIn() && (existing().creatorId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true || isAdmin()); // Creators or Admins can delete
     }
   }
