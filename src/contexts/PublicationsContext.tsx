@@ -124,7 +124,8 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
         Object.keys(merged).forEach((corregimiento) => {
           const filteredList = merged[corregimiento].filter(pub => {
             const t = pub.title.toLowerCase();
-            return t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
+            const isSeeded = pub.creatorId === 'static-seed';
+            return !isSeeded || t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
           });
           if (filteredList.length > 0) {
             filteredMerged[corregimiento] = filteredList;
@@ -156,7 +157,8 @@ export function PublicationsProvider({ children }: { children: ReactNode }) {
         Object.keys(filteredDefaults).forEach((corregimiento) => {
           const filteredList = filteredDefaults[corregimiento].filter(pub => {
             const t = pub.title.toLowerCase();
-            return t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
+            const isSeeded = pub.creatorId === 'static-seed';
+            return !isSeeded || t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
           });
           if (filteredList.length > 0) {
             filteredMerged[corregimiento] = filteredList;

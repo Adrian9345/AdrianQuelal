@@ -190,10 +190,11 @@ export function getSearchSuggestions(query: string) {
   if (isVercel) {
     finalPublications = matchedPublications.filter(pub => {
       const t = pub.title.toLowerCase();
-      return t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
+      const isSeeded = pub.creatorId === 'static-seed';
+      return !isSeeded || t.includes('guaguas de pan') || t.includes('guguas de pan') || t.includes('guagua');
     });
-    // On Vercel, the only corregimiento with this publication is Obonuco
-    finalCorregimientos = matchedCorregimientos.filter(c => c.name === 'Obonuco');
+    const activeCorregimientos = new Set(finalPublications.map(p => p.corregimiento));
+    finalCorregimientos = matchedCorregimientos.filter(c => c.name === 'Obonuco' || activeCorregimientos.has(c.name));
   }
 
   return {

@@ -89,7 +89,8 @@ export default function CreateContentScreen({ onNavigate, editingPublication }: 
         await addPublication(pubData as Publication);
         alert('Publicación creada con éxito');
       }
-      onNavigate('manage_publications');
+      sessionStorage.setItem('reloadTargetScreen', 'home');
+      window.location.reload();
     } catch (err) {
       alert('Error al guardar la publicación');
       console.error(err);
@@ -291,7 +292,8 @@ export default function CreateContentScreen({ onNavigate, editingPublication }: 
                     try {
                       await deletePublication(editingPublication.corregimiento, editingPublication.title, editingPublication.id);
                       alert('Publicación eliminada');
-                      onNavigate('manage_publications');
+                      sessionStorage.setItem('reloadTargetScreen', 'home');
+                      window.location.reload();
                     } catch (err) {
                       alert('Error al eliminar');
                     }

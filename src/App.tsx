@@ -32,12 +32,23 @@ export default function App() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   useEffect(() => {
+    const target = sessionStorage.getItem('reloadTargetScreen');
     const unsubscribe = initAuth((user) => {
-      // Always start the application on the initial login/welcome screen when loaded
-      setCurrentScreen('welcome');
+      if (target) {
+        setCurrentScreen(target as ScreenType);
+        sessionStorage.removeItem('reloadTargetScreen');
+      } else {
+        // Always start the application on the initial login/welcome screen when loaded
+        setCurrentScreen('welcome');
+      }
       setIsAuthChecking(false);
     }, () => {
-      setCurrentScreen('welcome');
+      if (target) {
+        setCurrentScreen(target as ScreenType);
+        sessionStorage.removeItem('reloadTargetScreen');
+      } else {
+        setCurrentScreen('welcome');
+      }
       setIsAuthChecking(false);
     });
 

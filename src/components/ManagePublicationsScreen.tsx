@@ -19,6 +19,8 @@ export default function ManagePublicationsScreen({ onNavigate, onEdit }: { onNav
     try {
       await deletePublication(confirmingDelete.corregimiento, confirmingDelete.title, confirmingDelete.id);
       setConfirmingDelete(null);
+      sessionStorage.setItem('reloadTargetScreen', 'home');
+      window.location.reload();
     } catch (error) {
       alert('Error al eliminar la publicación');
     }
