@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Compass, ArrowLeft } from 'lucide-react';
 import Header from './Header';
 import { ScreenType } from '../types';
 import { corregimientosMapData } from '../data/mapData';
@@ -50,6 +51,7 @@ export default function MapScreen({ onNavigate, onSelectCorregimiento }: { onNav
   const [locationError, setLocationError] = useState(false);
   const [selectedCorrId, setSelectedCorrId] = useState<string | null>(null);
   const [activeRouteDest, setActiveRouteDest] = useState<google.maps.LatLngLiteral | null>(null);
+  const [showUpcomingModal, setShowUpcomingModal] = useState(true);
   
   const defaultCenter = { lat: 1.2136, lng: -77.2811 }; // Pasto center
 
@@ -80,27 +82,6 @@ export default function MapScreen({ onNavigate, onSelectCorregimiento }: { onNav
     };
   }, []);
 
-  if (!hasValidKey) {
-    return (
-      <div className="flex flex-col h-full bg-white">
-        <Header onNavigate={onNavigate} title="Mapa Interactivo" />
-        <div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1,fontFamily:'sans-serif', padding: '20px'}}>
-          <div style={{textAlign:'center',maxWidth:520}}>
-            <h2 className="text-xl font-bold mb-4">Google Maps API Key Required</h2>
-            <p className="text-sm text-gray-600 mb-2"><strong>Step 1:</strong> <a href="https://console.cloud.google.com/google/maps-apis/start?utm_campaign=gmp-code-assist-ais" target="_blank" rel="noopener" className="text-blue-500 underline">Get an API Key</a></p>
-            <p className="text-sm text-gray-600 mb-2"><strong>Step 2:</strong> Add your key as a secret in AI Studio:</p>
-            <ul className="text-sm text-left leading-relaxed text-gray-600 list-disc list-inside">
-              <li>Open <strong>Settings</strong> (⚙️ gear icon, <strong>top-right corner</strong>)</li>
-              <li>Select <strong>Secrets</strong></li>
-              <li>Type <code>GOOGLE_MAPS_PLATFORM_KEY</code> as the secret name, press <strong>Enter</strong></li>
-              <li>Paste your API key as the value, press <strong>Enter</strong></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const { publications: publicationsMap } = usePublications();
 
   const selectedCorregimiento = useMemo(() => 
@@ -114,22 +95,74 @@ export default function MapScreen({ onNavigate, onSelectCorregimiento }: { onNav
     <div className="flex flex-col h-full bg-white relative overflow-hidden">
       <Header onNavigate={onNavigate} title="Mapa" />
       
-      <div className="flex-1 w-full relative">
-        {(loadingLocation || userLocation) && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-white/50 flex items-center gap-2">
-            {loadingLocation ? (
-              <>
-                <div className="w-4 h-4 border-2 border-[#f39233] border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm font-medium text-stone-700">📍 Detectando tu ubicación...</span>
-              </>
-            ) : (
-              <>
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                <span className="text-sm font-medium text-stone-700">📍 Actualizando ubicación en tiempo real...</span>
-              </>
-            )}
-           </div>
+      {/* Modal / Ventana Emergente */}
+      <AnimatePresence>
+        {showUpcomingModal && (
+          <div className="fixed inset-0 bg-stone-900/70 backdrop-blur-md z-[9999] flex items-center justify-center p-6 text-center">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-stone-200/50 flex flex-col items-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-5 border border-amber-100">
+                <Compass className="w-8 h-8 text-[#f39233] animate-pulse" />
+              </div>
+              <h2 className="text-xl font-extrabold text-stone-800 mb-2">
+                Próxima Versión
+              </h2>
+              <p className="text-stone-500 font-bold text-xs mb-4 uppercase tracking-widest">
+                Navegación & GPS en desarrollo
+              </p>
+              <p className="text-sm text-stone-600 leading-relaxed mb-6">
+                Estamos trabajando para mejorar la aplicación. En un próximo lanzamiento se aplicará la integración del GPS y la visualización correcta de la navegación.
+              </p>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button 
+                  onClick={() => onNavigate('home')}
+                  className="w-full bg-[#f39233] hover:bg-[#e08122] text-white font-bold py-3.5 px-6 rounded-2xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver al Inicio
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
+      </AnimatePresence>
+
+      <div className="flex-1 w-full relative">
+        {!hasValidKey ? (
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',fontFamily:'sans-serif', padding: '20px'}}>
+            <div style={{textAlign:'center',maxWidth:520}}>
+              <h2 className="text-xl font-bold mb-4">Google Maps API Key Required</h2>
+              <p className="text-sm text-gray-600 mb-2"><strong>Step 1:</strong> <a href="https://console.cloud.google.com/google/maps-apis/start?utm_campaign=gmp-code-assist-ais" target="_blank" rel="noopener" className="text-blue-500 underline">Get an API Key</a></p>
+              <p className="text-sm text-gray-600 mb-2"><strong>Step 2:</strong> Add your key as a secret in AI Studio:</p>
+              <ul className="text-sm text-left leading-relaxed text-gray-600 list-disc list-inside">
+                <li>Open <strong>Settings</strong> (⚙️ gear icon, <strong>top-right corner</strong>)</li>
+                <li>Select <strong>Secrets</strong></li>
+                <li>Type <code>GOOGLE_MAPS_PLATFORM_KEY</code> as the secret name, press <strong>Enter</strong></li>
+                <li>Paste your API key as the value, press <strong>Enter</strong></li>
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <>
+            {(loadingLocation || userLocation) && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-white/50 flex items-center gap-2">
+                {loadingLocation ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-[#f39233] border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm font-medium text-stone-700">📍 Detectando tu ubicación...</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                    <span className="text-sm font-medium text-stone-700">📍 Actualizando ubicación en tiempo real...</span>
+                  </>
+                )}
+              </div>
+            )}
         
         <APIProvider apiKey={API_KEY} version="weekly">
           <Map
@@ -268,6 +301,8 @@ export default function MapScreen({ onNavigate, onSelectCorregimiento }: { onNav
             )}
           </AnimatePresence>
         </APIProvider>
+          </>
+        )}
       </div>
     </div>
   );
